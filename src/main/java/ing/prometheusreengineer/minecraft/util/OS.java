@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Locale;
 
 public enum OS {
@@ -31,8 +32,11 @@ public enum OS {
 
     @Contract(value = "-> new", pure = true)
     public static @NotNull Path getConfigFolder() {
+        // -Dprometheus.folder or PROMETHEUS_FOLDER
+        String override = Settings.get("folder");
+        Path folder = override != null ? Paths.get(override) : current.configFolder.resolve("prometheus");
         // Absolute so it doesn't depend on the working directory the game was launched from
-        return PathUtil.fromEnvOr("PROMETHEUS_FOLDER", current.configFolder.resolve("prometheus")).toAbsolutePath();
+        return folder.toAbsolutePath();
     }
 
     @Contract(pure = true)
