@@ -7,7 +7,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
 
-@SuppressWarnings("unused")
 public enum OS {
     Windows(PathUtil.fromEnvOr("APPDATA", PathUtil.fromHomeFolder("AppData", "Roaming")).resolve(".minecraft")),
     MacOS(PathUtil.fromHomeFolder("Library", "Application Support")),
@@ -18,17 +17,18 @@ public enum OS {
     }
 
     private final @NotNull Path configFolder;
-    private static final @NotNull OS current;
+    /**
+     * Not final so tests can try every OS on one machine.
+     */
+    static @NotNull OS current = detect(System.getProperty("os.name"));
 
-    static {
-        String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
-        if (osName.contains("win")) {
-            current = Windows;
-        } else if (osName.contains("darwin") || osName.contains("mac")) {
-            current = MacOS;
-        } else {
-            current = Linux;
-        }
+    @Contract(pure = true)
+    static @NotNull OS detect(@NotNull String osName) {
+        String name = osName.toLowerCase(Locale.ROOT);
+        // mac first: "darwin" contains "win"
+        if (name.contains("mac") || name.contains("darwin")) return MacOS;
+        if (name.contains("win")) return Windows;
+        return Linux;
     }
 
     @Contract(value = "-> new", pure = true)
