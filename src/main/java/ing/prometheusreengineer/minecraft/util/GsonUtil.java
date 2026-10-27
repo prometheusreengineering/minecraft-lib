@@ -10,8 +10,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-@SuppressWarnings("unused")
-public class GsonUtil {
+public final class GsonUtil {
+    private GsonUtil() {}
+
     private static final Gson GSON = new Gson();
 
     /**

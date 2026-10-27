@@ -11,8 +11,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-@SuppressWarnings("unused")
-public class PathUtil {
+public final class PathUtil {
+    private PathUtil() {}
+
     @NotNull
     @Contract(value = "_ -> new", pure = true)
     public static Path fromHomeFolder(@NotNull String... paths) {
@@ -35,17 +36,11 @@ public class PathUtil {
         File source = src.toFile();
         if (source.isDirectory()) {
             Files.createDirectories(dst);
-            File[] children = source.listFiles();
-            if (children != null) {
-                for (File child : children) {
-                    copyRecursively(child.toPath(), dst.resolve(child.getName()));
-                }
+            for (File child : children(source)) {
+                copyRecursively(child.toPath(), dst.resolve(child.getName()));
             }
         } else {
-            Path parent = dst.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
+            createParent(dst);
             Files.copy(src, dst, StandardCopyOption.REPLACE_EXISTING);
         }
     }
@@ -56,17 +51,11 @@ public class PathUtil {
         File source = src.toFile();
         if (source.isDirectory()) {
             Files.createDirectories(dst);
-            File[] children = source.listFiles();
-            if (children != null) {
-                for (File child : children) {
-                    copyMissingRecursively(child.toPath(), dst.resolve(child.getName()));
-                }
+            for (File child : children(source)) {
+                copyMissingRecursively(child.toPath(), dst.resolve(child.getName()));
             }
         } else if (!Files.exists(dst)) {
-            Path parent = dst.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
+            createParent(dst);
             Files.copy(src, dst);
         }
     }
@@ -76,11 +65,8 @@ public class PathUtil {
     public static void deleteRecursively(@NotNull Path path) throws IOException {
         File file = path.toFile();
         if (file.isDirectory()) {
-            File[] children = file.listFiles();
-            if (children != null) {
-                for (File child : children) {
-                    deleteRecursively(child.toPath());
-                }
+            for (File child : children(file)) {
+                deleteRecursively(child.toPath());
             }
         }
         Files.deleteIfExists(path);
@@ -88,8 +74,22 @@ public class PathUtil {
 
     @Contract(value = "null -> true", pure = true)
     public static boolean isEmptyOrNull(@Nullable File dir) {
-        if (dir == null) return true;
-        File[] files = dir.listFiles();
-        return files == null || files.length == 0;
+        return dir == null || children(dir).length == 0;
+    }
+
+    /**
+     * {@link File#listFiles()}, but empty instead of null when {@code dir} isn't a folder or can't be read.
+     */
+    static File @NotNull [] children(@NotNull File dir) {
+        File[] children = dir.listFiles();
+        return children == null ? new File[0] : children;
+    }
+
+    /**
+     * A relative path like {@code file.txt} has no parent, and needs none created.
+     */
+    static void createParent(@NotNull Path path) throws IOException {
+        Path parent = path.getParent();
+        if (parent != null) Files.createDirectories(parent);
     }
 }
