@@ -2,9 +2,10 @@
 
 Shared code for the four Prometheus Minecraft projects.
 
-**Architecture (in progress, plan: `~/.claude/plans/okay-im-thinking-of-goofy-fern.md`):** the loader becomes the only
-way in. Stage 0 and the core are built (`../prometheus-minecraft`, branch `stage0-core`, see its `CLAUDE.md`). The
-patches don't use the lib or `PrometheusPatch` yet.
+**Architecture (in progress, see the loader's
+[docs/ROADMAP.md](https://github.com/prometheusreengineering/prometheus-minecraft/blob/main/docs/ROADMAP.md)):** the
+loader becomes the only way in. Stage 0 and the core are built (the loader's `stage0-core` branch, see its
+`CLAUDE.md`). The patches don't use the lib or `PrometheusPatch` yet.
 
 - **Stage 0:** a tiny jar the user installs. It has no dependencies and downloads the **core** from GitHub releases.
 - **Core:** the loader logic plus this lib, with its package not renamed. It downloads the patches, adds them to the
@@ -13,12 +14,15 @@ patches don't use the lib or `PrometheusPatch` yet.
 
 So there is exactly one copy of this lib in a game, and it updates with the core.
 
-| Project | Repo (sibling folder) | Build | Java | Runs on |
+| Project | Repo | Build | Java | Runs on |
 |---|---|---|---|---|
-| Loader | `../prometheus-minecraft` | Maven, modules `stage0`, `stage0-legacy`, `core` | 8 (needs JDK 21+ to compile) | Fabric, Forge 1.8-1.12 (LaunchWrapper), Forge 1.15+ (ModLauncher), NeoForge |
-| Lunar | `../lunar` | Maven | 8 | Lunar Client (Forge 1.8+, Fabric 1.16+) |
-| Essential | `../essential` | Maven | 8 | Forge 1.8+, Fabric 1.16+, NeoForge 1.20+ |
-| Dawn | `../minecraft-dawn` | Gradle + Loom, Kotlin | 17 | Dawn/Feather on modern Fabric |
+| Loader | [prometheus-minecraft](https://github.com/prometheusreengineering/prometheus-minecraft) | Maven, modules `stage0`, `stage0-legacy`, `core` | 8 (needs JDK 21+ to compile) | Fabric, Forge 1.8-1.12 (LaunchWrapper), Forge 1.15+ (ModLauncher), NeoForge |
+| Lunar | [minecraft-lunar](https://github.com/prometheusreengineering/minecraft-lunar) | Maven | 8 | Lunar Client (Forge 1.8+, Fabric 1.16+) |
+| Essential | [minecraft-essential](https://github.com/prometheusreengineering/minecraft-essential) | Maven | 8 | Forge 1.8+, Fabric 1.16+, NeoForge 1.20+ |
+| Dawn | [minecraft-dawn](https://github.com/prometheusreengineering/minecraft-dawn) | Gradle + Loom, Kotlin | 17 | Dawn/Feather on modern Fabric |
+
+Cloning them side by side (one parent folder) is the easiest setup: the loader's core then builds against this lib
+after a `mvn install` here.
 
 The loader downloads each patch from its GitHub release and adds it to the classpath (`patches.json` in the loader repo).
 Several patches can end up in the same game.
@@ -143,8 +147,8 @@ There may be no `mvn` on the PATH. IntelliJ's bundled Maven works:
   - Code that can never run is removed, not suppressed. For example, `Env` only keeps the one way of reading `Unsafe`
     that works on Java 8 to 25.
 
-Without Maven, use `javac` against the jars in `~/.m2/repository`. On Windows, give `javac` paths like `C:/Users/...`,
-because Windows `javac` can't read git-bash `/c/...` paths.
+Without Maven, use `javac` against the jars in `~/.m2/repository`. On Windows, give `javac` forward-slash Windows paths
+(`C:/...`), because Windows `javac` can't read git-bash `/c/...` paths.
 
 - Check that the code only uses Java 8 API, except `Env` (which needs `sun.misc`). Compile against
   `gson-2.2.4.jar` (not in `~/.m2` by default, so download it from Maven Central and verify its `.sha1`):
