@@ -84,9 +84,11 @@ disabled. The loader doesn't call `init` yet: patches still start from their own
 Requires Maven and a JDK 8+. If `mvn` isn't on your PATH, IntelliJ's bundled Maven works.
 
 ```
-mvn test       # JUnit 5, no network needed
+mvn test       # JUnit 5, no network needed; coverage report in target/site/jacoco/index.html
 mvn install    # into ~/.m2, where the loader and the patches find it
 ```
+
+Line and branch coverage is 100%, and `mvn verify` / `mvn install` fail if it drops.
 
 The loader's core build uses the copy in `~/.m2`, so run `mvn install` here before building the loader. A Gradle
 project (Dawn) needs `mavenLocal()` in its repositories, and the dependency as `compileOnly`.

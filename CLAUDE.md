@@ -131,6 +131,17 @@ There may be no `mvn` on the PATH. IntelliJ's bundled Maven works:
 
 - `mvn test` runs the tests. `mvn install` puts the lib in `~/.m2`, where the loader's core picks it up. **Run it
   after every change the core needs**, because the core build doesn't see this repo otherwise.
+- **Coverage is 100% of lines and branches, and `mvn verify` (so also `mvn install`) fails below that** (JaCoCo). The
+  report is `target/site/jacoco/index.html`. Every new line needs a test, on Java 8 and 21
+  (`JAVA_HOME=<jdk 8> mvn verify`).
+  - A path a test can't reach on its own (a failing write, another OS, a missing Log4j) gets a package-private seam:
+    an overload taking the dependency (`AtomicFiles.write(.., Mover)`, `Env.setenv(.., Write, Write, Write)`), a
+    non-final field (`OS.current`, `LogFile.writer`) or a package-private helper (`PathUtil.children`). Public API
+    stays unchanged.
+  - Prefer `if`/`else` over a `switch` on an enum: the switch has a hidden default branch that can't be covered.
+  - A method that only ever exits by throwing counts as uncovered, so test the success path too.
+  - Code that can never run is removed, not suppressed. For example, `Env` only keeps the one way of reading `Unsafe`
+    that works on Java 8 to 25.
 
 Without Maven, use `javac` against the jars in `~/.m2/repository`. On Windows, give `javac` paths like `C:/Users/...`,
 because Windows `javac` can't read git-bash `/c/...` paths.
@@ -145,6 +156,9 @@ because Windows `javac` can't read git-bash `/c/...` paths.
 - **Logging tests** set `-Dprometheus.folder` to a temp folder and turn the console off. They use a unique project name
   per test, because log files and rotation are keyed by project.
 - **`HttpTest`** runs a JDK `com.sun.net.httpserver.HttpServer` on the loopback address. It never touches the network.
+- **`EnvTest`** (and the tests that use `Env`) set real variables in the test JVM, named `PROMETHEUS_TEST_<uuid>`.
+- **Log4j:** the test classpath has log4j-api, so `Console.LOG4J` really goes through it. `LogTest` loads a second
+  copy of `Log` in a class loader without Log4j to test the broken-Log4j fallback.
 
 ## Style
 
