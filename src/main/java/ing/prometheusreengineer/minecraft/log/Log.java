@@ -34,7 +34,6 @@ import java.util.regex.Pattern;
  *     <li>{@code log.console} / {@code <project>.log.console}: {@code log4j}, {@code stdout}, {@code stderr} or {@code off}</li>
  * </ul>
  */
-@SuppressWarnings("unused")
 public final class Log {
     /**
      * Where the lib's own lines go while no project has claimed this copy with {@link #setOwner}.
@@ -171,13 +170,7 @@ public final class Log {
     }
 
     private static @NotNull LogFile file(@NotNull String project) {
-        LogFile file = files.get(project);
-        if (file == null) {
-            file = new LogFile(project, null);
-            LogFile raced = files.putIfAbsent(project, file);
-            if (raced != null) file = raced;
-        }
-        return file;
+        return files.computeIfAbsent(project, p -> new LogFile(p, null));
     }
 
     private static @NotNull String safe(@NotNull String project) {
@@ -190,28 +183,26 @@ public final class Log {
         return suffix.toString();
     }
 
-    @SuppressWarnings("fallthrough")
     private static void console(@NotNull String project, @NotNull Level level, @NotNull String name,
                                 @NotNull String message, @Nullable Throwable t) {
-        switch (console(project)) {
-            case LOG4J:
-                if (isLog4jPresent()) {
-                    try {
-                        Log4jConsole.write(level, name, message, t);
-                        return;
-                    } catch (Throwable e) {
-                        // present but broken (ex: a host that strips it down), stop trying
-                        log4jPresent = false;
-                    }
-                }
-                // fall through
-            case STDOUT:
-                print(System.out, level, name, message, t);
-                return;
-            case STDERR:
-                print(System.err, level, name, message, t);
-                return;
-            case OFF:
+        Console console = console(project);
+        if (console == Console.OFF) return;
+        if (console == Console.LOG4J && log4j(level, name, message, t)) return;
+        print(console == Console.STDERR ? System.err : System.out, level, name, message, t);
+    }
+
+    /**
+     * False when Log4j is missing or broken, and the caller falls back to stdout.
+     */
+    private static boolean log4j(@NotNull Level level, @NotNull String name, @NotNull String message, @Nullable Throwable t) {
+        if (!isLog4jPresent()) return false;
+        try {
+            Log4jConsole.write(level, name, message, t);
+            return true;
+        } catch (Throwable e) {
+            // present but broken (ex: a host that strips it down), stop trying
+            log4jPresent = false;
+            return false;
         }
     }
 

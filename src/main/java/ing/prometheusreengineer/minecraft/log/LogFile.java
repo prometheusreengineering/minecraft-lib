@@ -41,7 +41,10 @@ final class LogFile {
      */
     private final @Nullable Path folder;
 
-    private @Nullable Writer writer;
+    /**
+     * Package-private so tests can make a write fail.
+     */
+    @Nullable Writer writer;
     private @Nullable Path path;
     private boolean opened;
     private boolean full;
@@ -95,7 +98,7 @@ final class LogFile {
 
             writer = Files.newBufferedWriter(target, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
             path = target;
-            append(first ? header() : "---- another copy of the lib attached: " + jar() + " ----" + NEWLINE);
+            append(first ? header(Environment.detect()) : "---- another copy of the lib attached: " + jar(LogFile.class) + " ----" + NEWLINE);
         } catch (Throwable e) {
             writer = null;
             // the file is the one place this could go, so say it once on stderr
@@ -103,12 +106,14 @@ final class LogFile {
         }
     }
 
+    /**
+     * Only called while {@link #writer} is open.
+     */
     private void append(@NotNull String text) {
-        Writer w = writer;
-        if (w == null) return;
         try {
-            w.write(text);
-            w.flush();
+            //noinspection DataFlowIssue - see above
+            writer.write(text);
+            writer.flush();
             written += text.length();
         } catch (Throwable e) {
             writer = null;
@@ -116,10 +121,9 @@ final class LogFile {
         }
     }
 
-    private @NotNull String header() {
-        List<String> environment = Environment.detect();
+    @NotNull String header(@NotNull List<String> environment) {
         return "==== Prometheus/" + project + " log, started " + LocalDateTime.now().format(TIME) + " ====" + NEWLINE
-                + "jar:         " + jar() + NEWLINE
+                + "jar:         " + jar(LogFile.class) + NEWLINE
                 + "java:        " + System.getProperty("java.version") + " (" + System.getProperty("java.vendor") + ")" + NEWLINE
                 + "os:          " + System.getProperty("os.name") + " " + System.getProperty("os.version")
                 + " (" + System.getProperty("os.arch") + ")" + NEWLINE
@@ -129,11 +133,12 @@ final class LogFile {
     }
 
     /**
-     * The jar this copy of the lib was loaded from, which names the patch and its version.
+     * The jar {@code c} was loaded from: for this class, which copy of the lib (and so which core) is running.
      */
-    private static @NotNull String jar() {
+    static @NotNull String jar(@Nullable Class<?> c) {
         try {
-            CodeSource source = LogFile.class.getProtectionDomain().getCodeSource();
+            //noinspection DataFlowIssue - a null class lands in the catch, like any other failure
+            CodeSource source = c.getProtectionDomain().getCodeSource();
             if (source != null && source.getLocation() != null) return source.getLocation().toString();
         } catch (Throwable ignored) {}
         return "unknown";
@@ -167,8 +172,12 @@ final class LogFile {
         };
 
         static @NotNull List<String> detect() {
+            return detect(KNOWN);
+        }
+
+        static @NotNull List<String> detect(@NotNull String[][] candidates) {
             List<String> found = new ArrayList<>();
-            for (String[] known : KNOWN) {
+            for (String[] known : candidates) {
                 if (isPresent(known[0])) found.add(known[1]);
             }
             return found;

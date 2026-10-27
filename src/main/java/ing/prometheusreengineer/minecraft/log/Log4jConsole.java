@@ -20,26 +20,10 @@ final class Log4jConsole {
     private static final ConcurrentMap<String, Logger> loggers = new ConcurrentHashMap<>();
 
     static void write(@NotNull Level level, @NotNull String name, @NotNull String message, @Nullable Throwable t) {
-        Logger logger = loggers.get(name);
-        if (logger == null) {
-            logger = LogManager.getLogger(name);
-            Logger raced = loggers.putIfAbsent(name, logger);
-            if (raced != null) logger = raced;
-        }
-
-        switch (level) {
-            case DEBUG:
-                logger.debug(message, t);
-                break;
-            case INFO:
-                logger.info(message, t);
-                break;
-            case WARN:
-                logger.warn(message, t);
-                break;
-            case ERROR:
-                logger.error(message, t);
-                break;
-        }
+        Logger logger = loggers.computeIfAbsent(name, LogManager::getLogger);
+        if (level == Level.DEBUG) logger.debug(message, t);
+        else if (level == Level.INFO) logger.info(message, t);
+        else if (level == Level.WARN) logger.warn(message, t);
+        else logger.error(message, t);
     }
 }
