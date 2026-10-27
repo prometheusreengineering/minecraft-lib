@@ -22,7 +22,9 @@ public final class AtomicFiles {
         void write(@NotNull OutputStream out) throws IOException;
     }
 
-    /** Creates the parent folders. If {@code writer} throws, the target is untouched and the temp file is removed. */
+    /**
+     * Creates the parent folders. If {@code writer} throws, the target is untouched and the temp file is removed.
+     */
     public static void write(@NotNull Path target, @NotNull Writer writer) throws IOException {
         Path absolute = target.toAbsolutePath();
         Path parent = absolute.getParent();
@@ -48,7 +50,9 @@ public final class AtomicFiles {
         write(target, out -> out.write(bytes));
     }
 
-    /** UTF-8. */
+    /**
+     * UTF-8.
+     */
     public static void writeString(@NotNull Path target, @NotNull String text) throws IOException {
         write(target, text.getBytes(StandardCharsets.UTF_8));
     }

@@ -11,10 +11,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
+@SuppressWarnings("unused")
 public class PathUtil {
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    public static Path fromHomeFolder(@NotNull String ...paths) {
+    public static Path fromHomeFolder(@NotNull String... paths) {
         return Paths.get(System.getProperty("user.home"), paths);
     }
 

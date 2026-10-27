@@ -11,7 +11,9 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-/** Lowercase hex digests. Uses the JDK only, Guava's {@code Hashing} differs between the versions games ship. */
+/**
+ * Lowercase hex digests. Uses the JDK only, Guava's {@code Hashing} differs between the versions games ship.
+ */
 public final class Hashing {
     private Hashing() {}
 

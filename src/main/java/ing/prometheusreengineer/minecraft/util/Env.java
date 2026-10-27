@@ -34,6 +34,7 @@ public final class Env {
      *
      * @throws IllegalStateException if the write failed
      */
+    @SuppressWarnings("unused")
     public static void setenv(String name, String value) {
         if (name == null || value == null) throw new IllegalArgumentException("name and value are required");
         String original = System.getenv(name);
@@ -59,12 +60,14 @@ public final class Env {
         String now = System.getenv(name);
         if (!value.equals(now)) {
             throw new IllegalStateException("setenv did not set env " + name + "=" + now +
-                    (original == null || original.isEmpty() ? "" :  "(was: "+original+")") +
+                    (original == null || original.isEmpty() ? "" : "(was: " + original + ")") +
                     (primary == null ? "" : " (in-place threw " + primary + ")"));
         }
     }
 
-    /** Modify an UnmodifiableMap */
+    /**
+     * Modify an UnmodifiableMap
+     */
     @SuppressWarnings("unchecked")
     private static void inPlace(String name, String value) throws Exception {
         if (unsafe == null) throw new IllegalStateException("cannot setenv via inPlace: Unsafe unavailable");
@@ -93,7 +96,9 @@ public final class Env {
         ci.put(name, value);
     }
 
-    /** Fallback: replace ProcessEnvironment.theUnmodifiableEnvironment entirely. */
+    /**
+     * Fallback: replace ProcessEnvironment.theUnmodifiableEnvironment entirely.
+     */
     @SuppressWarnings("unchecked")
     private static void swapField(String name, String value) throws Exception {
         Unsafe u = unsafe();

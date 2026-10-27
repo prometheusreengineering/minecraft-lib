@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+@SuppressWarnings("unused")
 public class GsonUtil {
     private static final Gson GSON = new Gson();
 
@@ -22,7 +23,9 @@ public class GsonUtil {
         }
     }
 
-    /** Same output as {@link #writePretty(Path, Object, Type)}, as a string. */
+    /**
+     * Same output as {@link #writePretty(Path, Object, Type)}, as a string.
+     */
     public static String toPrettyString(Object src, Type type) throws IOException {
         StringWriter writer = new StringWriter();
         try (JsonWriter jsonWriter = new JsonWriter(writer)) {

@@ -34,8 +34,11 @@ import java.util.regex.Pattern;
  *     <li>{@code log.console} / {@code <project>.log.console}: {@code log4j}, {@code stdout}, {@code stderr} or {@code off}</li>
  * </ul>
  */
+@SuppressWarnings("unused")
 public final class Log {
-    /** Where the lib's own lines go while no project has claimed this copy with {@link #setOwner}. */
+    /**
+     * Where the lib's own lines go while no project has claimed this copy with {@link #setOwner}.
+     */
     static final String UNOWNED = "lib";
 
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -46,9 +49,13 @@ public final class Log {
     private static volatile @Nullable String owner;
     private static volatile @Nullable Boolean log4jPresent;
 
-    /** Null for the lib's own loggers, which follow {@link #owner}. */
+    /**
+     * Null for the lib's own loggers, which follow {@link #owner}.
+     */
     private final @Nullable String fixedProject;
-    /** What follows {@code Prometheus/<project>}, ex: {@code /ECM}. */
+    /**
+     * What follows {@code Prometheus/<project>}, ex: {@code /ECM}.
+     */
     private final @NotNull String suffix;
 
     private Log(@Nullable String fixedProject, @NotNull String suffix) {
@@ -122,7 +129,9 @@ public final class Log {
         log(Level.ERROR, null, format, args);
     }
 
-    /** See {@link #warn(String, Throwable)}. */
+    /**
+     * See {@link #warn(String, Throwable)}.
+     */
     public void error(@NotNull String message, @Nullable Throwable t) {
         log(Level.ERROR, t, message, t);
     }
@@ -216,6 +225,7 @@ public final class Log {
     private static void print(@NotNull PrintStream stream, @NotNull Level level, @NotNull String name,
                               @NotNull String message, @Nullable Throwable t) {
         // read at call time, so it goes through Forge's redirect even if Forge installs it after us
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter we handle it
         synchronized (stream) {
             stream.println("[" + LocalTime.now().format(TIME) + "] [" + name + "] (" + level + ") " + message);
             if (t != null) t.printStackTrace(stream);

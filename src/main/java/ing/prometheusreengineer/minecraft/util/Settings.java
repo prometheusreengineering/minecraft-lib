@@ -30,7 +30,9 @@ public final class Settings {
         return value == null ? fallback : value;
     }
 
-    /** Only {@code true} and {@code false} (any case) are accepted, anything else is the fallback. */
+    /**
+     * Only {@code true} and {@code false} (any case) are accepted, anything else is the fallback.
+     */
     @Contract(pure = true)
     public static boolean getBoolean(@NotNull String key, boolean fallback) {
         String value = get(key);

@@ -27,14 +27,18 @@ import java.util.List;
  * loaded twice) appends instead. Every line is flushed, so the file survives a crash.
  */
 final class LogFile {
-    /** Per run (counted in chars, close enough), so a logging loop can't fill the disk. */
+    /**
+     * Per run (counted in chars, close enough), so a logging loop can't fill the disk.
+     */
     static final long MAX_BYTES = 8L * 1024 * 1024;
 
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private static final String NEWLINE = System.lineSeparator();
 
     private final @NotNull String project;
-    /** Null means {@code OS.getConfigFolder()/logs}, resolved when the file is opened. */
+    /**
+     * Null means {@code OS.getConfigFolder()/logs}, resolved when the file is opened.
+     */
     private final @Nullable Path folder;
 
     private @Nullable Writer writer;
@@ -48,7 +52,9 @@ final class LogFile {
         this.folder = folder;
     }
 
-    /** Never throws. If the file can't be opened, file logging is turned off and the console keeps working. */
+    /**
+     * Never throws. If the file can't be opened, file logging is turned off and the console keeps working.
+     */
     synchronized void write(@NotNull Level level, @NotNull String name, @NotNull String message, @Nullable Throwable t) {
         if (!opened) open();
         if (writer == null || full) return;
@@ -122,7 +128,9 @@ final class LogFile {
                 + "debug:       " + (Log.isDebug(project) ? "on" : "off") + NEWLINE;
     }
 
-    /** The jar this copy of the lib was loaded from, which names the patch and its version. */
+    /**
+     * The jar this copy of the lib was loaded from, which names the patch and its version.
+     */
     private static @NotNull String jar() {
         try {
             CodeSource source = LogFile.class.getProtectionDomain().getCodeSource();
@@ -144,7 +152,9 @@ final class LogFile {
         return out.toString();
     }
 
-    /** What the game is running on, by which loader classes exist. Nothing is initialized. */
+    /**
+     * What the game is running on, by which loader classes exist. Nothing is initialized.
+     */
     static final class Environment {
         private Environment() {}
 

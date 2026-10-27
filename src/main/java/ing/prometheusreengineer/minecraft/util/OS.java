@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
 
+@SuppressWarnings("unused")
 public enum OS {
     Windows(PathUtil.fromEnvOr("APPDATA", PathUtil.fromHomeFolder("AppData", "Roaming")).resolve(".minecraft")),
     MacOS(PathUtil.fromHomeFolder("Library", "Application Support")),

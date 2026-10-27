@@ -13,6 +13,7 @@ import java.nio.file.Path;
  * This does not claim the lib with {@link Log#setOwner}: every patch shares the core's one copy of the lib, so the
  * lib's own lines belong to the core ({@code loader}), and a patch logs through {@link #log} instead.
  */
+@SuppressWarnings("unused")
 public final class PatchContext {
     private final @NotNull String project;
     private final @NotNull String platform;
@@ -44,13 +45,17 @@ public final class PatchContext {
         return coreVersion;
     }
 
-    /** {@code <prometheus folder>/<project>}, not created. */
+    /**
+     * {@code <prometheus folder>/<project>}, not created.
+     */
     @Contract(value = "-> new", pure = true)
     public @NotNull Path folder() {
         return OS.getConfigFolder().resolve(project);
     }
 
-    /** {@code log()} logs as {@code Prometheus/<project>}, {@code log("ECM")} as {@code Prometheus/<project>/ECM}. */
+    /**
+     * {@code log()} logs as {@code Prometheus/<project>}, {@code log("ECM")} as {@code Prometheus/<project>/ECM}.
+     */
     @Contract("_ -> new")
     public @NotNull Log log(@NotNull String @NotNull ... path) {
         return Log.get(project, path);

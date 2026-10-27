@@ -31,7 +31,7 @@ public final class Http {
     private static final String USER_AGENT = "Prometheus-Minecraft (+https://github.com/prometheusreengineering)";
 
     public static byte @NotNull [] get(@NotNull String url) throws IOException {
-        return get(url, Collections.<String, String>emptyMap());
+        return get(url, Collections.emptyMap());
     }
 
     public static byte @NotNull [] get(@NotNull String url, @NotNull Map<String, String> headers) throws IOException {
@@ -45,7 +45,9 @@ public final class Http {
         }
     }
 
-    /** UTF-8. */
+    /**
+     * UTF-8.
+     */
     public static @NotNull String getString(@NotNull String url, @NotNull Map<String, String> headers) throws IOException {
         return new String(get(url, headers), StandardCharsets.UTF_8);
     }
@@ -58,7 +60,7 @@ public final class Http {
      */
     public static void download(@NotNull String url, @NotNull Path target, @Nullable String sha256) throws IOException {
         log.debug("downloading %s to %s", url, target);
-        HttpURLConnection connection = open(url, Collections.<String, String>emptyMap());
+        HttpURLConnection connection = open(url, Collections.emptyMap());
         try (InputStream in = connection.getInputStream()) {
             long length = connection.getContentLengthLong();
             AtomicFiles.write(target, out -> {
