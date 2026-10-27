@@ -10,6 +10,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HashingTest {
@@ -36,5 +37,10 @@ class HashingTest {
         assertTrue(Hashing.matches(ABC_SHA256, " " + ABC_SHA256 + " "));
         assertFalse(Hashing.matches(ABC_SHA256, ABC_SHA1));
         assertFalse(Hashing.matches(ABC_SHA256, null));
+    }
+
+    @Test
+    void unknownAlgorithm() {
+        assertThrows(IllegalStateException.class, () -> Hashing.digest("NOT-A-HASH"));
     }
 }

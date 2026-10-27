@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -23,9 +24,21 @@ public final class AtomicFiles {
     }
 
     /**
+     * {@link Files#move}, swappable so tests can reach the fallback for file systems without atomic moves.
+     */
+    @FunctionalInterface
+    interface Mover {
+        void move(@NotNull Path source, @NotNull Path target, @NotNull CopyOption @NotNull ... options) throws IOException;
+    }
+
+    /**
      * Creates the parent folders. If {@code writer} throws, the target is untouched and the temp file is removed.
      */
     public static void write(@NotNull Path target, @NotNull Writer writer) throws IOException {
+        write(target, writer, Files::move);
+    }
+
+    static void write(@NotNull Path target, @NotNull Writer writer, @NotNull Mover mover) throws IOException {
         Path absolute = target.toAbsolutePath();
         Path parent = absolute.getParent();
         Files.createDirectories(parent);
@@ -37,9 +50,9 @@ public final class AtomicFiles {
                 writer.write(out);
             }
             try {
-                Files.move(tmp, absolute, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+                mover.move(tmp, absolute, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
             } catch (AtomicMoveNotSupportedException e) {
-                Files.move(tmp, absolute, StandardCopyOption.REPLACE_EXISTING);
+                mover.move(tmp, absolute, StandardCopyOption.REPLACE_EXISTING);
             }
         } finally {
             Files.deleteIfExists(tmp);

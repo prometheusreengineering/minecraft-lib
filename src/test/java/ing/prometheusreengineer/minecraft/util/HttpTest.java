@@ -30,6 +30,7 @@ class HttpTest {
     private HttpServer server;
     private String base;
     private volatile String userAgent;
+    private volatile String accept;
 
     @BeforeEach
     void start() throws IOException {
@@ -39,6 +40,7 @@ class HttpTest {
         server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
         server.createContext("/jar", exchange -> {
             userAgent = exchange.getRequestHeaders().getFirst("User-Agent");
+            accept = exchange.getRequestHeaders().getFirst("Accept");
             exchange.sendResponseHeaders(200, JAR.length);
             try (OutputStream out = exchange.getResponseBody()) {
                 out.write(JAR);
@@ -47,6 +49,13 @@ class HttpTest {
         server.createContext("/missing", exchange -> {
             exchange.sendResponseHeaders(404, -1);
             exchange.close();
+        });
+        server.createContext("/chunked", exchange -> {
+            // length 0 means chunked: no Content-Length to check against
+            exchange.sendResponseHeaders(200, 0);
+            try (OutputStream out = exchange.getResponseBody()) {
+                out.write(JAR);
+            }
         });
         server.createContext("/truncated", exchange -> {
             // promises 1000 bytes, sends 10 and hangs up
@@ -80,6 +89,28 @@ class HttpTest {
     void getsWithUserAgent() throws IOException {
         assertEquals(new String(JAR, StandardCharsets.UTF_8), Http.getString(base + "/jar", Collections.<String, String>emptyMap()));
         assertTrue(userAgent.startsWith("Prometheus-Minecraft"), userAgent);
+        assertEquals(new String(JAR, StandardCharsets.UTF_8), new String(Http.get(base + "/jar"), StandardCharsets.UTF_8));
+    }
+
+    @Test
+    void sendsHeaders() throws IOException {
+        Http.getString(base + "/jar", Collections.singletonMap("Accept", "application/vnd.github+json"));
+        assertEquals("application/vnd.github+json", accept);
+    }
+
+    @Test
+    void onlyHttp() throws IOException {
+        Path file = folder.resolve("local.txt");
+        Files.write(file, JAR);
+        IOException e = assertThrows(IOException.class, () -> Http.get(file.toUri().toString()));
+        assertTrue(e.getMessage().startsWith("not an http(s) url"), e.getMessage());
+    }
+
+    @Test
+    void downloadsWithoutLengthOrDigest() throws IOException {
+        Path target = cache().resolve("patch.jar");
+        Http.download(base + "/chunked", target, null);
+        assertEquals(Hashing.sha256(JAR), Hashing.sha256(target));
     }
 
     @Test

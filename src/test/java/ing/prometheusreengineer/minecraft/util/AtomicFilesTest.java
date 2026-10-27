@@ -5,8 +5,11 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,6 +50,18 @@ class AtomicFilesTest {
         }));
 
         assertEquals("good", read(target));
+        assertEquals(1, files(), "no temp files left");
+    }
+
+    @Test
+    void plainMoveWhereAtomicIsNotSupported() throws IOException {
+        Path target = folder.resolve("config.json");
+        AtomicFiles.write(target, out -> out.write("moved".getBytes(StandardCharsets.UTF_8)), (source, to, options) -> {
+            if (Arrays.asList(options).contains(StandardCopyOption.ATOMIC_MOVE)) throw new AtomicMoveNotSupportedException(source.toString(), to.toString(), "test");
+            Files.move(source, to, options);
+        });
+
+        assertEquals("moved", read(target));
         assertEquals(1, files(), "no temp files left");
     }
 }
