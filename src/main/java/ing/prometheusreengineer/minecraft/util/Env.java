@@ -97,7 +97,7 @@ public final class Env {
      * a separate TreeMap copy, not the map behind System.getenv(). No-op where {@code field} doesn't exist.
      */
     @SuppressWarnings("unchecked")
-    static void caseInsensitive(@Nullable Unsafe unsafe, @NotNull Class<?> owner, @NotNull String field, @NotNull String name, @NotNull String value) throws Exception {
+    static void caseInsensitive(@Nullable Unsafe unsafe, @NotNull Class<?> owner, @NotNull String field, @NotNull String name, @NotNull String value) {
         Field f;
         try {
             f = owner.getDeclaredField(field);
