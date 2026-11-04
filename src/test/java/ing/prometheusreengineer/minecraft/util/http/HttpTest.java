@@ -7,10 +7,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -144,5 +148,37 @@ class HttpTest {
         assertThrows(IOException.class, () -> Http.download(base + "/truncated", target, null));
         assertFalse(Files.exists(target));
         assertEquals(0, files(), "no temp files left");
+    }
+
+    @Test
+    void hangupMidBodyLeavesNothing() throws Exception {
+        // HttpServer drops the whole response, so send the headers and part of the body by hand
+        try (ServerSocket socket = new ServerSocket(0, 0, InetAddress.getLoopbackAddress())) {
+            Thread thread = new Thread(() -> {
+                try (Socket client = socket.accept()) {
+                    BufferedReader request = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.US_ASCII));
+                    while (!request.readLine().isEmpty()) {}
+                    OutputStream out = client.getOutputStream();
+                    out.write("HTTP/1.1 200 OK\r\nContent-Length: 1000\r\nConnection: close\r\n\r\n".getBytes(StandardCharsets.US_ASCII));
+                    out.write(new byte[10]);
+                } catch (IOException ignored) {}
+            }, "Prometheus - test - hangup");
+            thread.setDaemon(true);
+            thread.start();
+
+            Path target = cache().resolve("patch.jar");
+            assertThrows(IOException.class, () -> Http.download("http://127.0.0.1:" + socket.getLocalPort() + "/jar", target, null));
+            assertFalse(Files.exists(target));
+            assertEquals(0, files(), "no temp files left");
+            thread.join();
+        }
+    }
+
+    @Test
+    void checksTheByteCount() throws IOException {
+        Http.checkComplete("u", 10, 10);
+        Http.checkComplete("u", 10, -1);
+        IOException e = assertThrows(IOException.class, () -> Http.checkComplete("u", 10, 1000));
+        assertTrue(e.getMessage().startsWith("incomplete download"), e.getMessage());
     }
 }

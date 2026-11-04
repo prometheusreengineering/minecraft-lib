@@ -15,7 +15,9 @@ import java.util.List;
 import java.util.ServiceLoader;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PatchContextTest {
@@ -68,6 +70,21 @@ class PatchContextTest {
 
         assertSame(context, TestPatch.received);
         assertTrue(read("patchinit").contains("INFO  Prometheus/patchinit/Init: on launchwrapper, core 2.0.0"), read("patchinit"));
+    }
+
+    @Test
+    void applyCallsInit() {
+        PatchContext context = new PatchContext("patchapply", "fabric", "2.0.0");
+        assertNull(new TestPatch().apply(context));
+        assertSame(context, TestPatch.received);
+    }
+
+    @Test
+    void applyWrapsWhatInitThrows() {
+        Exception cause = new Exception("broken patch");
+        PrometheusPatch patch = context -> { throw cause; };
+        RuntimeException e = assertThrows(RuntimeException.class, () -> patch.apply(new PatchContext("patchthrow", "fabric", "2.0.0")));
+        assertSame(cause, e.getCause());
     }
 
     private String read(String project) throws IOException {

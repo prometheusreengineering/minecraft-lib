@@ -9,7 +9,9 @@ import org.jetbrains.annotations.NotNullByDefault;
 import java.util.function.Supplier;
 
 @NotNullByDefault
-public class LambdaUtil {
+public final class LambdaUtil {
+    private LambdaUtil() {}
+
     public static boolean runCatching(UncheckedRunnable runnable) {
         try {
             runnable.run();

@@ -67,11 +67,7 @@ public final class Http {
             long length = connection.getContentLengthLong();
             AtomicFiles.write(target, out -> {
                 MessageDigest digest = Hashing.digest("SHA-256");
-                long copied = copy(in, out, digest);
-                // a server hanging up early can look like a normal end of stream, so count
-                if (length >= 0 && copied != length) {
-                    throw new IOException("incomplete download from " + url + "(got " + copied + "/" + length + " bytes)");
-                }
+                checkComplete(url, copy(in, out, digest), length);
                 String actual = Hashing.hex(digest.digest());
                 if (sha256 != null && !Hashing.matches(actual, sha256)) {
                     throw new IOException("sha256 mismatch for " + url + "(expected " + sha256 + ", got " + actual +")");
@@ -102,6 +98,14 @@ public final class Http {
             throw new IOException("HTTP " + status + " from " + url);
         }
         return connection;
+    }
+
+    // a server hanging up early can look like a normal end of stream, so count.
+    // the JDK's own connection already throws "Premature EOF" there, so this guards other URLConnections
+    static void checkComplete(@NotNull String url, long copied, long length) throws IOException {
+        if (length >= 0 && copied != length) {
+            throw new IOException("incomplete download from " + url + "(got " + copied + "/" + length + " bytes)");
+        }
     }
 
     private static long copy(@NotNull InputStream in, @NotNull OutputStream out, @Nullable MessageDigest digest) throws IOException {

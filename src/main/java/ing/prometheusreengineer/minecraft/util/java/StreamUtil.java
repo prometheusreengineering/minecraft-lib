@@ -473,8 +473,8 @@ public class StreamUtil<T> implements Stream<T> {
      * type} is {@code Object}, containing the elements of this stream
      */
     @Override
-    public Object[] toArray() {
-        return new Object[0];
+    public Object @NotNull [] toArray() {
+        return stream.toArray();
     }
 
     /**
@@ -502,7 +502,7 @@ public class StreamUtil<T> implements Stream<T> {
      * }</pre>
      */
     @Override
-    public <A> A[] toArray(IntFunction<A[]> generator) {
+    public <A> A @NotNull [] toArray(IntFunction<A[]> generator) {
         return stream.toArray(generator);
     }
 
@@ -598,7 +598,7 @@ public class StreamUtil<T> implements Stream<T> {
      * @see #max(Comparator)
      */
     @Override
-    public Optional<T> reduce(BinaryOperator<T> accumulator) {
+    public @NotNull Optional<T> reduce(BinaryOperator<T> accumulator) {
         return stream.reduce(accumulator);
     }
 
@@ -778,7 +778,7 @@ public class StreamUtil<T> implements Stream<T> {
      * @throws NullPointerException if the minimum element is null
      */
     @Override
-    public Optional<T> min(Comparator<? super T> comparator) {
+    public @NotNull Optional<T> min(Comparator<? super T> comparator) {
         return stream.min(comparator);
     }
 
@@ -798,7 +798,7 @@ public class StreamUtil<T> implements Stream<T> {
      * @throws NullPointerException if the maximum element is null
      */
     @Override
-    public Optional<T> max(Comparator<? super T> comparator) {
+    public @NotNull Optional<T> max(Comparator<? super T> comparator) {
         return stream.max(comparator);
     }
 
@@ -919,8 +919,8 @@ public class StreamUtil<T> implements Stream<T> {
      * @throws NullPointerException if the element selected is null
      */
     @Override
-    public Optional<T> findFirst() {
-        return Optional.empty();
+    public @NotNull Optional<T> findFirst() {
+        return stream.findFirst();
     }
 
     /**
@@ -942,7 +942,7 @@ public class StreamUtil<T> implements Stream<T> {
      * @see #findFirst()
      */
     @Override
-    public Optional<T> findAny() {
+    public @NotNull Optional<T> findAny() {
         return stream.findAny();
     }
 
@@ -958,7 +958,7 @@ public class StreamUtil<T> implements Stream<T> {
      * existing operations are not sufficient to the task.
      */
     @Override
-    public Iterator<T> iterator() {
+    public @NotNull Iterator<T> iterator() {
         return stream.iterator();
     }
 
@@ -982,7 +982,7 @@ public class StreamUtil<T> implements Stream<T> {
      * all possible stream pipelines.
      */
     @Override
-    public Spliterator<T> spliterator() {
+    public @NotNull Spliterator<T> spliterator() {
         return stream.spliterator();
     }
 
@@ -1009,7 +1009,7 @@ public class StreamUtil<T> implements Stream<T> {
      * @return a sequential stream
      */
     @Override
-    public StreamUtil<T> sequential() {
+    public @NotNull StreamUtil<T> sequential() {
         return wrap(stream.sequential());
     }
 
@@ -1024,7 +1024,7 @@ public class StreamUtil<T> implements Stream<T> {
      * @return a parallel stream
      */
     @Override
-    public StreamUtil<T> parallel() {
+    public @NotNull StreamUtil<T> parallel() {
         return wrap(stream.parallel());
     }
 
@@ -1040,7 +1040,7 @@ public class StreamUtil<T> implements Stream<T> {
      * @return an unordered stream
      */
     @Override
-    public StreamUtil<T> unordered() {
+    public @NotNull StreamUtil<T> unordered() {
         return wrap(stream.unordered());
     }
 
@@ -1063,7 +1063,7 @@ public class StreamUtil<T> implements Stream<T> {
      * @return a stream with a handler that is run if the stream is closed
      */
     @Override
-    public StreamUtil<T> onClose(Runnable closeHandler) {
+    public @NotNull StreamUtil<T> onClose(@NotNull Runnable closeHandler) {
         return wrap(stream.onClose(closeHandler));
     }
 
