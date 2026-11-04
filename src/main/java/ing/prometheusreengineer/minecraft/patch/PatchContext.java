@@ -1,7 +1,7 @@
 package ing.prometheusreengineer.minecraft.patch;
 
 import ing.prometheusreengineer.minecraft.log.Log;
-import ing.prometheusreengineer.minecraft.util.OS;
+import ing.prometheusreengineer.minecraft.util.os.OS;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 

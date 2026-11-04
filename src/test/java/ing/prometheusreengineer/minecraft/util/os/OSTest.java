@@ -1,4 +1,4 @@
-package ing.prometheusreengineer.minecraft.util;
+package ing.prometheusreengineer.minecraft.util.os;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;

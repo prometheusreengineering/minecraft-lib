@@ -45,6 +45,8 @@ class LogTest {
         project = "test-" + UUID.randomUUID().toString().substring(0, 8);
         System.setProperty("prometheus.folder", folder.toString());
         System.setProperty("prometheus.log.console", "off");
+        // lib.log is shared by every test class that logs through Log.lib, reopen it in this test's folder
+        Log.files.remove(Log.UNOWNED);
     }
 
     @AfterEach

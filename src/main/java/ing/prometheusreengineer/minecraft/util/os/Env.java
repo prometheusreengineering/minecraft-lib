@@ -1,4 +1,4 @@
-package ing.prometheusreengineer.minecraft.util;
+package ing.prometheusreengineer.minecraft.util.os;
 
 import ing.prometheusreengineer.minecraft.log.Log;
 import org.jetbrains.annotations.NotNull;

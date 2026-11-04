@@ -1,5 +1,7 @@
-package ing.prometheusreengineer.minecraft.util;
+package ing.prometheusreengineer.minecraft.util.os;
 
+import ing.prometheusreengineer.minecraft.util.Settings;
+import ing.prometheusreengineer.minecraft.util.io.PathUtil;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 

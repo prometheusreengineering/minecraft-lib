@@ -4,6 +4,7 @@ import ing.prometheusreengineer.minecraft.util.Settings;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.io.PrintStream;
 import java.time.LocalTime;
@@ -38,12 +39,14 @@ public final class Log {
     /**
      * Where the lib's own lines go while no project has claimed this copy with {@link #setOwner}.
      */
+    @VisibleForTesting
     static final String UNOWNED = "lib";
 
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static final Pattern UNSAFE_NAME = Pattern.compile("[^A-Za-z0-9._-]");
 
-    private static final ConcurrentMap<String, LogFile> files = new ConcurrentHashMap<>();
+    @VisibleForTesting
+    static final ConcurrentMap<String, LogFile> files = new ConcurrentHashMap<>();
     private static volatile @Nullable Console defaultConsole;
     private static volatile @Nullable String owner;
     private static volatile @Nullable Boolean log4jPresent;
@@ -216,7 +219,7 @@ public final class Log {
     private static void print(@NotNull PrintStream stream, @NotNull Level level, @NotNull String name,
                               @NotNull String message, @Nullable Throwable t) {
         // read at call time, so it goes through Forge's redirect even if Forge installs it after us
-        //noinspection SynchronizationOnLocalVariableOrMethodParameter we handle it
+//        noinspection SynchronizationOnLocalVariableOrMethodParameter we handle it
         synchronized (stream) {
             stream.println("[" + LocalTime.now().format(TIME) + "] [" + name + "] (" + level + ") " + message);
             if (t != null) t.printStackTrace(stream);

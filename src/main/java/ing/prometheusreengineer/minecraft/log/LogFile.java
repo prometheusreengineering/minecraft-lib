@@ -1,8 +1,9 @@
 package ing.prometheusreengineer.minecraft.log;
 
-import ing.prometheusreengineer.minecraft.util.OS;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import ing.prometheusreengineer.minecraft.util.java.LambdaUtil;
+import ing.prometheusreengineer.minecraft.util.os.OS;
+import ing.prometheusreengineer.minecraft.util.java.StreamUtil;
+import org.jetbrains.annotations.*;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -16,7 +17,7 @@ import java.nio.file.StandardOpenOption;
 import java.security.CodeSource;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -26,6 +27,7 @@ import java.util.List;
  * to open it in this JVM moves the previous run to {@code <project>.1.log}; a second copy of the same project (its jar
  * loaded twice) appends instead. Every line is flushed, so the file survives a crash.
  */
+@NotNullByDefault
 final class LogFile {
     /**
      * Per run (counted in chars, close enough), so a logging loop can't fill the disk.
@@ -35,22 +37,20 @@ final class LogFile {
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private static final String NEWLINE = System.lineSeparator();
 
-    private final @NotNull String project;
+    private final String project;
     /**
-     * Null means {@code OS.getConfigFolder()/logs}, resolved when the file is opened.
+     * Defaults to {@code OS.getConfigFolder()/logs} (resolved when the file is opened).
      */
     private final @Nullable Path folder;
 
-    /**
-     * Package-private so tests can make a write fail.
-     */
+    @VisibleForTesting
     @Nullable Writer writer;
     private @Nullable Path path;
     private boolean opened;
     private boolean full;
     private long written;
 
-    LogFile(@NotNull String project, @Nullable Path folder) {
+    LogFile(String project, @Nullable Path folder) {
         this.project = project;
         this.folder = folder;
     }
@@ -58,7 +58,7 @@ final class LogFile {
     /**
      * Never throws. If the file can't be opened, file logging is turned off and the console keeps working.
      */
-    synchronized void write(@NotNull Level level, @NotNull String name, @NotNull String message, @Nullable Throwable t) {
+    synchronized void write(Level level, String name, String message, @Nullable Throwable t) {
         if (!opened) open();
         if (writer == null || full) return;
 
@@ -109,7 +109,7 @@ final class LogFile {
     /**
      * Only called while {@link #writer} is open.
      */
-    private void append(@NotNull String text) {
+    private void append(String text) {
         try {
             //noinspection DataFlowIssue - see above
             writer.write(text);
@@ -121,7 +121,8 @@ final class LogFile {
         }
     }
 
-    @NotNull String header(@NotNull List<String> environment) {
+    @VisibleForTesting
+    String header(List<String> environment) {
         return "==== Prometheus/" + project + " log, started " + LocalDateTime.now().format(TIME) + " ====" + NEWLINE
                 + "jar:         " + jar(LogFile.class) + NEWLINE
                 + "java:        " + System.getProperty("java.version") + " (" + System.getProperty("java.vendor") + ")" + NEWLINE
@@ -135,21 +136,23 @@ final class LogFile {
     /**
      * The jar {@code c} was loaded from: for this class, which copy of the lib (and so which core) is running.
      */
-    static @NotNull String jar(@Nullable Class<?> c) {
+    @VisibleForTesting
+    static String jar(@Nullable Class<?> c) {
         try {
-            //noinspection DataFlowIssue - a null class lands in the catch, like any other failure
+            // a null class lands in the catch, like any other failure
+            //noinspection DataFlowIssue
             CodeSource source = c.getProtectionDomain().getCodeSource();
             if (source != null && source.getLocation() != null) return source.getLocation().toString();
         } catch (Throwable ignored) {}
         return "unknown";
     }
 
-    private static @NotNull String pad(@NotNull Level level) {
+    private static String pad(Level level) {
         String name = level.name();
         return name.length() == 4 ? name + ' ' : name;
     }
 
-    private static @NotNull String stackTrace(@NotNull Throwable t) {
+    private static String stackTrace(Throwable t) {
         StringWriter out = new StringWriter();
         try (PrintWriter writer = new PrintWriter(out)) {
             t.printStackTrace(writer);
@@ -171,28 +174,29 @@ final class LogFile {
                 {"com.moonsworth.lunar.genesis.Genesis", "Lunar Client"},
         };
 
-        static @NotNull List<String> detect() {
+        static @Unmodifiable List<String> detect() {
             return detect(KNOWN);
         }
 
-        static @NotNull List<String> detect(@NotNull String[][] candidates) {
-            List<String> found = new ArrayList<>();
-            for (String[] known : candidates) {
-                if (isPresent(known[0])) found.add(known[1]);
-            }
-            return found;
+        static @Unmodifiable List<String> detect(String[][] candidates) {
+            return StreamUtil.of(candidates)
+                    .map((known) -> isPresent(known[0]) ? known[1] : null)
+                    .filterNotNull()
+                    .toUnmodifiableList();
         }
 
-        static boolean isPresent(@NotNull String className) {
-            ClassLoader[] loaders = {Thread.currentThread().getContextClassLoader(), LogFile.class.getClassLoader(), ClassLoader.getSystemClassLoader()};
-            for (ClassLoader loader : loaders) {
-                if (loader == null) continue;
-                try {
-                    Class.forName(className, false, loader);
-                    return true;
-                } catch (Throwable ignored) {}
-            }
-            return false;
+        static boolean isPresent(String className) {
+            return Arrays.stream(new ClassLoader[]{
+                    Thread.currentThread().getContextClassLoader(),
+                    LogFile.class.getClassLoader(),
+                    ClassLoader.getSystemClassLoader()
+            })
+                .parallel()
+                .anyMatch((loader) ->
+                    LambdaUtil.runCatching(() ->
+                        Class.forName(className, false, loader)
+                    )
+            );
         }
     }
 }

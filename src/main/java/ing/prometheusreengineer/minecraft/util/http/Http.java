@@ -1,6 +1,8 @@
-package ing.prometheusreengineer.minecraft.util;
+package ing.prometheusreengineer.minecraft.util.http;
 
 import ing.prometheusreengineer.minecraft.log.Log;
+import ing.prometheusreengineer.minecraft.util.Settings;
+import ing.prometheusreengineer.minecraft.util.io.AtomicFiles;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -68,11 +70,11 @@ public final class Http {
                 long copied = copy(in, out, digest);
                 // a server hanging up early can look like a normal end of stream, so count
                 if (length >= 0 && copied != length) {
-                    throw new IOException("incomplete download from " + url + ": got " + copied + " of " + length + " bytes");
+                    throw new IOException("incomplete download from " + url + "(got " + copied + "/" + length + " bytes)");
                 }
                 String actual = Hashing.hex(digest.digest());
                 if (sha256 != null && !Hashing.matches(actual, sha256)) {
-                    throw new IOException("sha256 mismatch for " + url + ": expected " + sha256 + ", got " + actual);
+                    throw new IOException("sha256 mismatch for " + url + "(expected " + sha256 + ", got " + actual +")");
                 }
             });
         } finally {

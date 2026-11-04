@@ -1,4 +1,4 @@
-package ing.prometheusreengineer.minecraft.util;
+package ing.prometheusreengineer.minecraft.util.http;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

@@ -1,7 +1,8 @@
-package ing.prometheusreengineer.minecraft.util;
+package ing.prometheusreengineer.minecraft.util.io;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -35,7 +36,7 @@ public final class GsonUtil {
         return writer.toString();
     }
 
-    private static void writePretty(JsonWriter jsonWriter, Object src, Type type) {
+    private static void writePretty(@NotNull JsonWriter jsonWriter, Object src, Type type) {
         jsonWriter.setIndent("    "); // GsonBuilder.setPrettyPrinting is 2 space by default
         GSON.toJson(src, type, jsonWriter);
     }

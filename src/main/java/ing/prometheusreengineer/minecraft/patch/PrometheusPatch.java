@@ -1,6 +1,7 @@
 package ing.prometheusreengineer.minecraft.patch;
 
-import org.jetbrains.annotations.NotNull;
+import ing.prometheusreengineer.minecraft.util.java.unchecked.UncheckedFunction;
+import org.jetbrains.annotations.NotNullByDefault;
 
 /**
  * A patch's only way in. The loader core adds the patch jar to the classpath, registers its mixin configs, then calls
@@ -9,11 +10,17 @@ import org.jetbrains.annotations.NotNull;
  * <br>
  * Patches have no entry points of their own (no Fabric entrypoints, tweakers or mod metadata), so anything a patch
  * needs to run at startup goes here.
+ * <br>
+ * A thrown exception simply disables the patch.
  */
-public interface PrometheusPatch {
-    /**
-     * Called once, on the platform's loading thread. A thrown exception is logged by the core and only disables this
-     * patch, it never crashes the game.
-     */
-    void init(@NotNull PatchContext context) throws Exception;
+@FunctionalInterface
+@NotNullByDefault
+public interface PrometheusPatch extends UncheckedFunction<PatchContext, Void> {
+    void init(PatchContext context) throws Exception;
+
+    @Override
+    default Void checkedApply(PatchContext context) throws Throwable {
+        init(context);
+        return null;
+    }
 }

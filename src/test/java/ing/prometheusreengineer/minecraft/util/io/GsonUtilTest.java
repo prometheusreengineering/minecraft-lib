@@ -1,4 +1,4 @@
-package ing.prometheusreengineer.minecraft.util;
+package ing.prometheusreengineer.minecraft.util.io;
 
 import com.google.gson.reflect.TypeToken;
 import org.junit.jupiter.api.Test;

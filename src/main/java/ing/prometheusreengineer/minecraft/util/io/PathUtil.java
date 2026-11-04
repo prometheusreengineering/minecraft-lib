@@ -1,4 +1,4 @@
-package ing.prometheusreengineer.minecraft.util;
+package ing.prometheusreengineer.minecraft.util.io;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;

@@ -1,6 +1,7 @@
-package ing.prometheusreengineer.minecraft.util;
+package ing.prometheusreengineer.minecraft.util.http;
 
 import com.sun.net.httpserver.HttpServer;
+import ing.prometheusreengineer.minecraft.util.io.AtomicFiles;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
