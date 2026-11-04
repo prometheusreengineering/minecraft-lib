@@ -1,0 +1,75 @@
+name: release
+
+# publishing a GitHub release deploys that version to GitHub Packages and to
+# prometheusreengineering/maven (maven.prometheusreengineer.ing), and attaches the jars to the release
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write  # attach the jars to the release
+  packages: write  # deploy to GitHub Packages
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # writes a settings.xml with server "github" authenticated by GITHUB_TOKEN
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+          cache: maven
+          server-id: github
+
+      - name: Check the tag matches the pom version
+        run: |
+          pom=$(mvn --batch-mode --quiet help:evaluate -Dexpression=project.version -DforceStdout)
+          tag="${GITHUB_REF_NAME#v}"
+          if [ "$pom" != "$tag" ]; then
+            echo "::error::release tag $GITHUB_REF_NAME doesn't match pom version $pom"
+            exit 1
+          fi
+          echo "VERSION=$pom" >> "$GITHUB_ENV"
+
+      - name: Deploy to GitHub Packages
+        run: >
+          mvn --batch-mode --no-transfer-progress deploy
+          -DaltDeploymentRepository=github::https://maven.pkg.github.com/${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/checkout@v4
+        with:
+          repository: prometheusreengineering/maven
+          ssh-key: ${{ secrets.MAVEN_REPO_DEPLOY_KEY }}
+          path: maven-repo
+
+      - name: Deploy to prometheusreengineering/maven
+        run: >
+          mvn --batch-mode --no-transfer-progress deploy -DskipTests -Djacoco.skip=true
+          -DaltDeploymentRepository=prometheus::file://${{ github.workspace }}/maven-repo
+
+      - name: Push prometheusreengineering/maven
+        working-directory: maven-repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "deploy[auto]: ing.prometheusreengineer.minecraft:minecraft-lib:$VERSION"
+          git push
+
+      - name: Attach the jars to the release
+        run: >
+          gh release upload "$GITHUB_REF_NAME"
+          target/minecraft-lib-$VERSION.jar
+          target/minecraft-lib-$VERSION-sources.jar
+          target/minecraft-lib-$VERSION-javadoc.jar
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

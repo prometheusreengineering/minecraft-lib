@@ -178,7 +178,6 @@ public class StreamUtil<T> implements Stream<T> {
      * The {@code mapper} function passed to {@code flatMap} splits a line,
      * using a simple regular expression, into an array of words, and then
      * creates a stream of words from that array.
-     * @see #mapMulti mapMulti
      */
     @Override
     public <R> Stream<R> flatMap(Function<? super T, ? extends Stream<? extends R>> mapper) {
