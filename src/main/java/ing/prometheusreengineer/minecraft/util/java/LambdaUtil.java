@@ -14,7 +14,6 @@ public final class LambdaUtil {
 
     /**
      * Returns true if the function returned successfully.
-
      */
     public static boolean runCatching(UncheckedRunnable runnable) {
         try {
@@ -26,7 +25,6 @@ public final class LambdaUtil {
     }
     /**
      * Returns true if the function returned successfully.
-
      */
     public static <T> boolean runCatching(UncheckedSupplier<T> func) {
         try {
@@ -38,7 +36,6 @@ public final class LambdaUtil {
     }
     /**
      * Returns true if the function returned successfully.
-
      */
     public static boolean runCatching(UncheckedBooleanSupplier func) {
         try {
@@ -50,7 +47,6 @@ public final class LambdaUtil {
     }
     /**
      * Returns true if the function returned successfully.
-
      */
     public static boolean runCatching(UncheckedIntSupplier func) {
         try {
@@ -62,7 +58,6 @@ public final class LambdaUtil {
     }
     /**
      * Returns true if the function returned successfully.
-
      */
     public static boolean runCatching(UncheckedLongSupplier func) {
         try {
@@ -74,7 +69,6 @@ public final class LambdaUtil {
     }
     /**
      * Returns true if the function returned successfully.
-
      */
     public static boolean runCatching(UncheckedDoubleSupplier func) {
         try {
