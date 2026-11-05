@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 @FunctionalInterface
 public interface UncheckedSupplier<T> extends Supplier<T> {
     T checkedGet() throws Throwable;
+    @Override
     default T get() {
         try {
             return checkedGet();
