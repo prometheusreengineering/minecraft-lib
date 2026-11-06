@@ -1,16 +1,17 @@
 package ing.prometheusreengineer.minecraft.util;
 
+import ing.prometheusreengineer.minecraft.util.java.LambdaUtil;
+import ing.prometheusreengineer.minecraft.util.java.StreamUtil;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
+import java.util.Optional;
 
 /**
- * User overrides, read from {@code -Dprometheus.<key>} first and {@code PROMETHEUS_<KEY>} second.
- * <br>
- * Dots in the key become underscores in the env variable, so {@code dawn.port} is read from
- * {@code -Dprometheus.dawn.port} or {@code PROMETHEUS_DAWN_PORT}. Blank values count as unset.
+ * User overrides read from {@code -Dprometheus.<key>} first and {@code PROMETHEUS_<KEY>} second.
+ * Environment variable is all caps and replaces dots with underscores.
  */
 public final class Settings {
     private Settings() {}
@@ -26,32 +27,27 @@ public final class Settings {
 
     @Contract(value = "_, !null -> !null", pure = true)
     public static String get(@NotNull String key, @Nullable String fallback) {
-        String value = get(key);
-        return value == null ? fallback : value;
+        return Optional.ofNullable(get(key)).orElse(fallback);
     }
 
-    /**
-     * Only {@code true} and {@code false} (any case) are accepted, anything else is the fallback.
-     */
     @Contract(pure = true)
     public static boolean getBoolean(@NotNull String key, boolean fallback) {
         String value = get(key);
-        if ("true".equalsIgnoreCase(value)) return true;
-        if ("false".equalsIgnoreCase(value)) return false;
+        if (value == null) return fallback;
+        if (StreamUtil.from("1", "true",  "yes"   )
+                .anyMatch(value::equalsIgnoreCase)) return true;
+        if (StreamUtil.from("0", "false", "no", "")
+                .anyMatch(value::equalsIgnoreCase)) return false;
         return fallback;
     }
 
     @Contract(pure = true)
     public static int getInt(@NotNull String key, int fallback) {
-        String value = get(key);
-        if (value == null) return fallback;
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            return fallback;
-        }
+        //noinspection DataFlowIssue (null returns the fallback)
+        return LambdaUtil.runCheckedOr(() -> Integer.parseInt(get(key)), fallback);
     }
 
+    @Contract(value = "null -> true", pure = true)
     private static boolean isBlank(@Nullable String value) {
         return value == null || value.trim().isEmpty();
     }

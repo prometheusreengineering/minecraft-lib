@@ -4,13 +4,14 @@ import ing.prometheusreengineer.minecraft.util.Settings;
 import ing.prometheusreengineer.minecraft.util.io.PathUtil;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
 
 public enum OS {
-    Windows(PathUtil.fromEnvOr("APPDATA", PathUtil.fromHomeFolder("AppData", "Roaming")).resolve(".minecraft")),
+    Windows(PathUtil.fromEnvOr("APPDATA", PathUtil.fromHomeFolder("AppData", "Roaming"))),
     MacOS(PathUtil.fromHomeFolder("Library", "Application Support")),
     Linux(PathUtil.fromEnvOr("XDG_DATA_HOME", PathUtil.fromHomeFolder(".local", "share")));
 
@@ -19,11 +20,10 @@ public enum OS {
     }
 
     private final @NotNull Path configFolder;
-    /**
-     * Not final so tests can try every OS on one machine.
-     */
+    @VisibleForTesting
     static @NotNull OS current = detect(System.getProperty("os.name"));
 
+    @VisibleForTesting
     @Contract(pure = true)
     static @NotNull OS detect(@NotNull String osName) {
         String name = osName.toLowerCase(Locale.ROOT);

@@ -1,6 +1,6 @@
 package ing.prometheusreengineer.minecraft.util.io;
 
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.NotNullByDefault;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -15,12 +15,13 @@ import java.nio.file.StandardCopyOption;
  * Writes that never leave a half written file behind: the content goes to a temp file next to the target, which then
  * replaces the target in one move. A crash or a failed write leaves the old file as it was.
  */
+@NotNullByDefault
 public final class AtomicFiles {
     private AtomicFiles() {}
 
     @FunctionalInterface
     public interface Writer {
-        void write(@NotNull OutputStream out) throws IOException;
+        void write(OutputStream out) throws IOException;
     }
 
     /**
@@ -28,17 +29,17 @@ public final class AtomicFiles {
      */
     @FunctionalInterface
     interface Mover {
-        void move(@NotNull Path source, @NotNull Path target, @NotNull CopyOption @NotNull ... options) throws IOException;
+        void move(Path source, Path target, CopyOption... options) throws IOException;
     }
 
     /**
      * Creates the parent folders. If {@code writer} throws, the target is untouched and the temp file is removed.
      */
-    public static void write(@NotNull Path target, @NotNull Writer writer) throws IOException {
+    public static void write(Path target, Writer writer) throws IOException {
         write(target, writer, Files::move);
     }
 
-    static void write(@NotNull Path target, @NotNull Writer writer, @NotNull Mover mover) throws IOException {
+    static void write(Path target, Writer writer, Mover mover) throws IOException {
         Path absolute = target.toAbsolutePath();
         Path parent = absolute.getParent();
         Files.createDirectories(parent);
@@ -59,14 +60,14 @@ public final class AtomicFiles {
         }
     }
 
-    public static void write(@NotNull Path target, byte @NotNull [] bytes) throws IOException {
+    public static void write(Path target, byte[] bytes) throws IOException {
         write(target, out -> out.write(bytes));
     }
 
     /**
      * UTF-8.
      */
-    public static void writeString(@NotNull Path target, @NotNull String text) throws IOException {
+    public static void writeString(Path target, String text) throws IOException {
         write(target, text.getBytes(StandardCharsets.UTF_8));
     }
 }

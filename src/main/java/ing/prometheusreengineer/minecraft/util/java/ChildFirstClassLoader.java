@@ -1,23 +1,26 @@
 package ing.prometheusreengineer.minecraft.util.java;
 
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.NotNullByDefault;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
+import java.util.Optional;
 
 /**
  * Child first, because the core adds its own jar to the game's class path so patches can use the lib. With the normal
  * parent-first order, classes asked for after that would come from the game's copy and mix with the ones already
  * loaded from here, which breaks package-private access between them.
  */
+@NotNullByDefault
 public final class ChildFirstClassLoader extends URLClassLoader {
     static {
         ClassLoader.registerAsParallelCapable();
     }
 
-    ChildFirstClassLoader(@NotNull Path jar, ClassLoader parent) throws MalformedURLException {
+    public ChildFirstClassLoader(Path jar, ClassLoader parent) throws MalformedURLException {
         super(new URL[]{jar.toUri().toURL()}, parent);
     }
 
@@ -26,11 +29,7 @@ public final class ChildFirstClassLoader extends URLClassLoader {
         synchronized (getClassLoadingLock(name)) {
             Class<?> type = findLoadedClass(name);
             if (type == null && !name.startsWith("java.")) {
-                try {
-                    type = findClass(name);
-                } catch (ClassNotFoundException ignored) {
-                    // not in the core jar
-                }
+                type = LambdaUtil.runCheckedOr(() -> findClass(name), null);
             }
             if (type == null) type = super.loadClass(name, false);
             if (resolve) resolveClass(type);
@@ -39,8 +38,7 @@ public final class ChildFirstClassLoader extends URLClassLoader {
     }
 
     @Override
-    public URL getResource(String name) {
-        URL url = findResource(name);
-        return url != null ? url : super.getResource(name);
+    public @Nullable URL getResource(String name) {
+        return Optional.ofNullable(findResource(name)).orElse(super.getResource(name));
     }
 }

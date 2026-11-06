@@ -5,6 +5,7 @@ import ing.prometheusreengineer.minecraft.util.Settings;
 import ing.prometheusreengineer.minecraft.util.io.AtomicFiles;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -102,6 +103,7 @@ public final class Http {
 
     // a server hanging up early can look like a normal end of stream, so count.
     // the JDK's own connection already throws "Premature EOF" there, so this guards other URLConnections
+    @VisibleForTesting
     static void checkComplete(@NotNull String url, long copied, long length) throws IOException {
         if (length >= 0 && copied != length) {
             throw new IOException("incomplete download from " + url + "(got " + copied + "/" + length + " bytes)");
