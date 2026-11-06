@@ -2,7 +2,7 @@ package ing.prometheusreengineer.minecraft.util;
 
 import ing.prometheusreengineer.minecraft.util.java.StreamUtil;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.NotNullByDefault;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
@@ -14,11 +14,12 @@ import static ing.prometheusreengineer.minecraft.util.java.LambdaUtil.runChecked
  * User overrides read from {@code -Dprometheus.<key>} first and {@code PROMETHEUS_<KEY>} second.
  * Environment variable is all caps and replaces dots with underscores.
  */
+@NotNullByDefault
 public final class Settings {
     private Settings() {}
 
     @Contract(pure = true)
-    public static @Nullable String get(@NotNull String key) {
+    public static @Nullable String get(String key) {
         String value = System.getProperty("prometheus." + key);
         if (isBlank(value)) {
             value = System.getenv("PROMETHEUS_" + key.toUpperCase(Locale.ROOT).replace('.', '_'));
@@ -27,12 +28,12 @@ public final class Settings {
     }
 
     @Contract(value = "_, !null -> !null", pure = true)
-    public static String get(@NotNull String key, @Nullable String fallback) {
+    public static @Nullable String get(String key, @Nullable String fallback) {
         return Optional.ofNullable(get(key)).orElse(fallback);
     }
 
     @Contract(pure = true)
-    public static boolean getBoolean(@NotNull String key, boolean fallback) {
+    public static boolean getBoolean(String key, boolean fallback) {
         String value = get(key);
         if (value == null) return fallback;
         if (StreamUtil.from("1", "true",  "yes"   )
@@ -43,8 +44,8 @@ public final class Settings {
     }
 
     @Contract(pure = true)
-    public static int getInt(@NotNull String key, int fallback) {
-        //noinspection DataFlowIssue (null returns the fallback)
+    public static int getInt(String key, int fallback) {
+        // noinspection DataFlowIssue (null returns the fallback)
         return runCheckedOr(() -> Integer.parseInt(get(key)), fallback);
     }
 

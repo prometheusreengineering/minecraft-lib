@@ -3,7 +3,7 @@ package ing.prometheusreengineer.minecraft.patch;
 import ing.prometheusreengineer.minecraft.log.Log;
 import ing.prometheusreengineer.minecraft.util.os.OS;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.NotNullByDefault;
 
 import java.nio.file.Path;
 
@@ -13,34 +13,35 @@ import java.nio.file.Path;
  * This does not claim the lib with {@link Log#setOwner}: every patch shares the core's one copy of the lib, so the
  * lib's own lines belong to the core ({@code loader}), and a patch logs through {@link #log} instead.
  */
+@NotNullByDefault
 public final class PatchContext {
-    private final @NotNull String project;
-    private final @NotNull String platform;
-    private final @NotNull String coreVersion;
+    private final String project;
+    private final String platform;
+    private final String coreVersion;
 
     /**
      * @param project     the patch's name, its log file and settings key, ex: {@code lunar}
      * @param platform    what the core is running on, ex: {@code fabric}, {@code launchwrapper}, {@code modlauncher}
      * @param coreVersion the version of the core (and so of this lib) that loaded the patch
      */
-    public PatchContext(@NotNull String project, @NotNull String platform, @NotNull String coreVersion) {
+    public PatchContext(String project, String platform, String coreVersion) {
         this.project = project;
         this.platform = platform;
         this.coreVersion = coreVersion;
     }
 
     @Contract(pure = true)
-    public @NotNull String project() {
+    public String project() {
         return project;
     }
 
     @Contract(pure = true)
-    public @NotNull String platform() {
+    public String platform() {
         return platform;
     }
 
     @Contract(pure = true)
-    public @NotNull String coreVersion() {
+    public String coreVersion() {
         return coreVersion;
     }
 
@@ -48,7 +49,7 @@ public final class PatchContext {
      * {@code <prometheus folder>/<project>}, not created.
      */
     @Contract(value = "-> new", pure = true)
-    public @NotNull Path folder() {
+    public Path folder() {
         return OS.getConfigFolder().resolve(project);
     }
 
@@ -56,7 +57,7 @@ public final class PatchContext {
      * {@code log()} logs as {@code Prometheus/<project>}, {@code log("ECM")} as {@code Prometheus/<project>/ECM}.
      */
     @Contract("_ -> new")
-    public @NotNull Log log(@NotNull String @NotNull ... path) {
+    public Log log(String... path) {
         return Log.get(project, path);
     }
 }
