@@ -36,7 +36,11 @@ class SettingsTest {
         System.setProperty("prometheus.test.value", "TRUE");
         assertTrue(Settings.getBoolean("test.value", false));
         System.setProperty("prometheus.test.value", "yes");
-        assertFalse(Settings.getBoolean("test.value", false));
+        assertTrue(Settings.getBoolean("test.value", false));
+        System.setProperty("prometheus.test.value", "1");
+        assertTrue(Settings.getBoolean("test.value", false));
+        System.setProperty("prometheus.test.value", "garbage");
+        assertTrue(Settings.getBoolean("test.value", true));
     }
 
     @Test
