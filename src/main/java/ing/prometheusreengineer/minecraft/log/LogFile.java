@@ -1,6 +1,5 @@
 package ing.prometheusreengineer.minecraft.log;
 
-import ing.prometheusreengineer.minecraft.util.java.LambdaUtil;
 import ing.prometheusreengineer.minecraft.util.os.OS;
 import ing.prometheusreengineer.minecraft.util.java.StreamUtil;
 import org.jetbrains.annotations.*;
@@ -17,8 +16,9 @@ import java.nio.file.StandardOpenOption;
 import java.security.CodeSource;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
+
+import static ing.prometheusreengineer.minecraft.util.java.LambdaUtil.runCatching;
 
 /**
  * {@code <prometheus folder>/logs/<project>.log}, one per project.
@@ -40,6 +40,7 @@ final class LogFile {
     private final String project;
     /**
      * Defaults to {@code OS.getConfigFolder()/logs} (resolved when the file is opened).
+     * @see OS#getConfigFolder()
      */
     private final @Nullable Path folder;
 
@@ -180,20 +181,20 @@ final class LogFile {
 
         static @Unmodifiable List<String> detect(String[][] candidates) {
             return StreamUtil.of(candidates)
-                    .map((known) -> isPresent(known[0]) ? known[1] : null)
+                    .map(known -> isPresent(known[0]) ? known[1] : null)
                     .filterNotNull()
                     .toUnmodifiableList();
         }
 
         static boolean isPresent(String className) {
-            return Arrays.stream(new ClassLoader[]{
+            return StreamUtil.from(
                     Thread.currentThread().getContextClassLoader(),
                     LogFile.class.getClassLoader(),
                     ClassLoader.getSystemClassLoader()
-            })
+            )
                 .parallel()
-                .anyMatch((loader) ->
-                    LambdaUtil.runCatching(() ->
+                .anyMatch(loader ->
+                    runCatching(() ->
                         Class.forName(className, false, loader)
                     )
             );

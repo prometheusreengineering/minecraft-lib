@@ -1,6 +1,5 @@
 package ing.prometheusreengineer.minecraft.util;
 
-import ing.prometheusreengineer.minecraft.util.java.LambdaUtil;
 import ing.prometheusreengineer.minecraft.util.java.StreamUtil;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -8,6 +7,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 import java.util.Optional;
+
+import static ing.prometheusreengineer.minecraft.util.java.LambdaUtil.runCheckedOr;
 
 /**
  * User overrides read from {@code -Dprometheus.<key>} first and {@code PROMETHEUS_<KEY>} second.
@@ -44,7 +45,7 @@ public final class Settings {
     @Contract(pure = true)
     public static int getInt(@NotNull String key, int fallback) {
         //noinspection DataFlowIssue (null returns the fallback)
-        return LambdaUtil.runCheckedOr(() -> Integer.parseInt(get(key)), fallback);
+        return runCheckedOr(() -> Integer.parseInt(get(key)), fallback);
     }
 
     @Contract(value = "null -> true", pure = true)

@@ -9,6 +9,8 @@ import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import static ing.prometheusreengineer.minecraft.util.java.LambdaUtil.runCheckedOr;
+
 /**
  * Child first, because the core adds its own jar to the game's class path so patches can use the lib. With the normal
  * parent-first order, classes asked for after that would come from the game's copy and mix with the ones already
@@ -29,7 +31,7 @@ public final class ChildFirstClassLoader extends URLClassLoader {
         synchronized (getClassLoadingLock(name)) {
             Class<?> type = findLoadedClass(name);
             if (type == null && !name.startsWith("java.")) {
-                type = LambdaUtil.runCheckedOr(() -> findClass(name), null);
+                type = runCheckedOr(() -> findClass(name), null);
             }
             if (type == null) type = super.loadClass(name, false);
             if (resolve) resolveClass(type);
